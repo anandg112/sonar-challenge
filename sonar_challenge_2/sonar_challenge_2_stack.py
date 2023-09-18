@@ -7,8 +7,6 @@ from aws_cdk import (
 from constructs import Construct
 from sonar_challenge_2.app_tier import AppServices
 from sonar_challenge_2.db_tier import MySqlRDSAurora
-from sonar_challenge_2.web_tier import Alb
-
 
 class SonarChallengeStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
