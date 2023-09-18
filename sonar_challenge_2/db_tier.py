@@ -36,8 +36,7 @@ class MySqlRDSAurora:
                         "kms:List*",
                         "kms:Put*",
                         "kms:DisableKey",
-                        "kms:ScheduleKeyDeletion"
-
+                        "kms:ScheduleKeyDeletion",
                     ],
                     principals=[iam.AccountRootPrincipal()],
                     resources=["*"],
@@ -70,7 +69,7 @@ class MySqlRDSAurora:
                 id="sonar-writer",
                 instance_type=host_type,
                 auto_minor_version_upgrade=True,
-                enable_performance_insights=False, # T3.large does not support performance insights
+                enable_performance_insights=False,  # T3.large does not support performance insights
                 publicly_accessible=False,
             ),
             readers=[

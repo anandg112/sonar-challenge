@@ -4,6 +4,7 @@ from aws_cdk import (
     aws_ecs as ecs,
     aws_elasticloadbalancingv2 as elb,
     aws_ecs_patterns as ecs_patterns,
+    aws_autoscaling as autoscaling,
 )
 
 
@@ -19,11 +20,17 @@ class AppServices:
         target_protocol: elb.ApplicationProtocol.HTTP,
         container_port: int,
         imageName: ecs.ContainerImage.from_registry(""),
+        asg_name: str,
+        asg_instance_type: str,
+        asg_machine_image: str,
+        asg_desired_capacity: int,
     ) -> None:
-        cluster_id = "sonarcluster"
+        cluster_id = "ecscluster"
         service_id = "fargateservice"
         task_definition_id = "taskdefinition"
         container_id = "webapp"
+        asg_id = "asg"
+
         cluster = ecs.Cluster(stack, id=cluster_id, cluster_name=cluster_name, vpc=vpc)
         task_definition = ecs.FargateTaskDefinition(stack, task_definition_id)
         task_definition.add_container(
@@ -58,3 +65,18 @@ class AppServices:
         )
 
         fargate_service.target_group.configure_health_check(path="/healthz")
+
+        app_asg = autoscaling.AutoScalingGroup(
+            stack,
+            id=asg_id,
+            vpc=vpc,
+            instance_type=asg_instance_type,
+            machine_image=asg_machine_image,
+            associate_public_ip_address=False,
+            auto_scaling_group_name=asg_name,
+            desired_capacity=asg_desired_capacity,
+            vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
+            ),
+        )
+        app_asg.add_security_group(security_group=app_security_group)

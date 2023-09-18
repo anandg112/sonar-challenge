@@ -8,6 +8,7 @@ from constructs import Construct
 from sonar_challenge_2.app_tier import AppServices
 from sonar_challenge_2.db_tier import MySqlRDSAurora
 
+
 class SonarChallengeStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
@@ -78,7 +79,7 @@ class SonarChallengeStack(Stack):
             vpc=self.sonar_vpc,
             host_type=ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.LARGE),
             db_name="sonardb",
-            key_alias="sonar-db-encrypt-key-4",
+            key_alias="sonar-db-encrypt-key-5",
             db_backup_bucket_name="sonar-db-backup",
             db_security_group=rds_security_group,
         )
@@ -95,4 +96,10 @@ class SonarChallengeStack(Stack):
                 "docker.io/stefanprodan/podinfo:latest"
             ),
             container_port=9898,
+            asg_name="sonar-asg",
+            asg_desired_capacity=3,
+            asg_machine_image=ec2.MachineImage.latest_amazon_linux2023(),
+            asg_instance_type=ec2.InstanceType.of(
+                ec2.InstanceClass.T3, ec2.InstanceSize.LARGE
+            ),
         )
