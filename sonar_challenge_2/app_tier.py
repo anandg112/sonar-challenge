@@ -18,8 +18,11 @@ class AppServices:
         alb_name: str,
         app_security_group: ec2.SecurityGroup,
         target_protocol: elb.ApplicationProtocol.HTTP,
+        container_name: str,
+        image_name: str,
         container_port: int,
-        imageName: ecs.ContainerImage.from_registry(""),
+        cpu_used: int,
+        memory_used: int,
         asg_name: str,
         asg_instance_type: str,
         asg_machine_image: str,
@@ -35,8 +38,8 @@ class AppServices:
         task_definition = ecs.FargateTaskDefinition(stack, task_definition_id)
         task_definition.add_container(
             container_id,
-            container_name="podinfo",
-            image=imageName,
+            container_name=container_name,
+            image=image_name,
             port_mappings=[ecs.PortMapping(container_port=container_port)],
         )
 
@@ -46,14 +49,9 @@ class AppServices:
             service_name=service_name,
             cluster=cluster,  # Required
             platform_version=ecs.FargatePlatformVersion.VERSION1_4,
-            cpu=512,  # Default is 256
+            cpu=cpu_used,  # Default is 256
             desired_count=3,  # Default is 1
-            # task_image_options=ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
-            # image=ecs.ContainerImage.from_registry(
-            #     "docker.io/stefanprodan/podinfo:latest"
-            # )
-            # ),
-            memory_limit_mib=1024,  # Default is 512
+            memory_limit_mib=memory_used,  # Default is 512
             public_load_balancer=True,  # Default is True
             task_subnets=ec2.SubnetSelection(
                 subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS

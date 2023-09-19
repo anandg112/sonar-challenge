@@ -15,6 +15,12 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - uses: actions/checkout@v4.0.0
+      - name: Black Formatter
+        uses: psf/black@stable
+        with:
+          options: "--check --verbose"
+          src: "./sonar_challenge_2"
+          version: "23.9.1"
       - name: Set up Python 3.10.2
         uses: actions/setup-python@v4.7.0
         with:

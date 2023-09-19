@@ -10,11 +10,29 @@ from sonar_challenge_2.db_tier import MySqlRDSAurora
 
 
 class SonarChallengeStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
+    def __init__(
+        self,
+        scope: Construct,
+        construct_id: str,
+        vpc_cidr: str,
+        vpc_name: str,
+        azs_for_subnets: list[str],
+        db_name: str,
+        kms_key_alias: str,
+        db_backup_bucket: str,
+        cluster_name: str,
+        service_name: str,
+        alb_name: str,
+        asg_name: str,
+        asg_desired_capacity: int,
+        container_name: str,
+        container_image: str,
+        container_port: int,
+        task_cpu: int,
+        task_memory: int,
+        **kwargs
+    ) -> None:
         super().__init__(scope, construct_id, **kwargs)
-
-        vpc_name = "sonar-vpc"
-        vpc_cidr = "10.0.0.0/16"
         vpc_id = "vpc1"
 
         self.sonar_vpc = ec2.Vpc(
@@ -22,7 +40,7 @@ class SonarChallengeStack(Stack):
             id=vpc_id,
             vpc_name=vpc_name,
             ip_addresses=ec2.IpAddresses.cidr(vpc_cidr),
-            max_azs=3,
+            availability_zones=azs_for_subnets,
             nat_gateways=3,
             subnet_configuration=[
                 ec2.SubnetConfiguration(
@@ -78,26 +96,27 @@ class SonarChallengeStack(Stack):
             stack=self,
             vpc=self.sonar_vpc,
             host_type=ec2.InstanceType.of(ec2.InstanceClass.T3, ec2.InstanceSize.LARGE),
-            db_name="sonardb",
-            key_alias="sonar-db-encrypt-key-5",
-            db_backup_bucket_name="sonar-db-backup",
+            db_name=db_name,
+            key_alias=kms_key_alias,
+            db_backup_bucket_name=db_backup_bucket,
             db_security_group=rds_security_group,
         )
 
         AppServices(
             stack=self,
             vpc=self.sonar_vpc,
-            cluster_name="sonar-cluster",
-            service_name="sonar-fargate-service",
-            alb_name="sonar-alb",
+            cluster_name=cluster_name,
+            service_name=service_name,
+            alb_name=alb_name,
             app_security_group=app_security_group,
             target_protocol=elb.ApplicationProtocol.HTTP,
-            imageName=ecs.ContainerImage.from_registry(
-                "docker.io/stefanprodan/podinfo:latest"
-            ),
-            container_port=9898,
-            asg_name="sonar-asg",
-            asg_desired_capacity=3,
+            image_name=container_image,
+            container_name=container_name,
+            container_port=container_port,
+            cpu_used=task_cpu,
+            memory_used=task_memory,
+            asg_name=asg_name,
+            asg_desired_capacity=asg_desired_capacity,
             asg_machine_image=ec2.MachineImage.latest_amazon_linux2023(),
             asg_instance_type=ec2.InstanceType.of(
                 ec2.InstanceClass.T3, ec2.InstanceSize.LARGE
