@@ -21,6 +21,14 @@ jobs:
           options: "--check --verbose"
           src: "./sonar_challenge_2"
           version: "23.9.1"
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+      - name: Test with pytest
+        run: |
+          pytest -rA
       - name: Set up Python 3.10.2
         uses: actions/setup-python@v4.7.0
         with:
